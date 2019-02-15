@@ -1,5 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
+import DayPickerInput from 'react-day-picker/DayPickerInput';
+import 'react-day-picker/lib/style.css';
 
 class App extends React.Component { 
   render() { 
@@ -24,9 +26,9 @@ class SearchForm extends React.Component {
         artist: '', 
         date: ''
       },
-      artistValid: false,
-      dateValid: false,
-      formValid: false
+    //   artistValid: false,
+    //   dateValid: false,
+    //   formValid: false
     }
 
     this.handleChange = this.handleChange.bind(this);
@@ -37,14 +39,23 @@ class SearchForm extends React.Component {
     console.log(this.state);
     const {name, value} = event.target;
     let formErrors = this.state.formErrors; 
+    // let artistValid = this.state.artistValid;
+    // let dateValid = this.state.dateValid;
 
     switch(name) { 
-      case "artist": 
+      case "artist":
+        const artistCheck = RegExp('^[a-zA-Z0-9 ]*$'); 
+        formErrors.artist = artistCheck.test(value) && value.legnth > 0 ? '' : `Artist name field can only contain alpha numeric characters and spaces, sorry AC/DC fans.`;
         break;
       case "date": 
+        dateValid = 
+        formErrors.dateValid = dateValid ? '' : ' is invalid';
         break;
       default: 
+        break;
     }
+
+    this.setState({formErrors, [name]: value}, () => console.log(this.state)); 
   }
 
   handleSubmit(event) { 
@@ -62,9 +73,8 @@ class SearchForm extends React.Component {
         <label> 
           Artist:
           <input type="text" name="artist" placeholder="Artist" onChange={this.handleChange}/>
-          Date Range:
-          <input type="text" name="date" placeholder="Dates" onChange={this.handleChange}/>
         </label>
+        <DayPickerInput onDayChange={day => console.log(day)}/>
         <button>Search</button>
       </form>
     );

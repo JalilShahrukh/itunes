@@ -9,45 +9,45 @@ class Search extends React.Component {
     super(props);
     this.state = {
       artist: '',
-      songs: '',
+      songs: [],
       formErrors: {
         artist: '',
         songs: ''
       },
-      isLoading: false
+      isLoading: false,
+      error: ''
     };
 
     this.handleSearch = this.handleSearch.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleChange = this.handleChange.bind(this);
-    this.handleKeyPress = this.handleKeyPress.bind(this);
   }
 
+  // Function to request data from API.
   handleSearch(query) {
     this.setState({isLoading: true}); 
 
     axios.get(API + query, { adapter: jsonpAdapter })
       .then(res => 
-        console.log(res)
-        // this.setState({
-        // songs: res,
-        // isLoading: false
-        // })
+        this.setState({
+         songs: res.data.results,
+         isLoading: false
+        })
       )
       .catch(error => this.setState({
         error,
         isLoading: false
       }))
-
-    console.log(this.state); 
   }
 
   // Function to handle user submit.
   handleSubmit(e) {
-    e.preventDefault();
+		e.preventDefault();
+		const { formErrors } = this.state;
 
-    if (formValid(this.state)) {
+    if (formValid(formErrors)) {
       console.log(`Artist: ${this.state.artist}`);
+      this.handleSearch(e.target.value);
     } else {
       console.error(`Artist name field can only contain alpha numeric characters and spaces, sorry AC/DC fans.`);
     }
@@ -70,40 +70,38 @@ class Search extends React.Component {
     this.setState({ formErrors, [name]: value }, () => console.log(this.state));
   };
 
-  handleKeyPress(e) {
-    if (e.key === 'Enter') {
-      console.log(e.target.value); 
-      this.handleSearch(e.target.value);
-      e.preventDefault();
-    }
-  }
-
   render() {
-    const { formErrors } = this.state;
+    const { formErrors, songs } = this.state;
 
     return (
-      <form onSubmit={this.handleSubmit}>
-        <div className="artistContainer">
-          <label htmlFor="artist">Artist</label>
-          <input 
-            placeholder="Artist" 
-            type="artist" 
-            name="artist" 
-            onChange={this.handleChange} 
-            onKeyPress={this.handleKeyPress}
-          />
-          {formErrors.artist.length > 0 && (<span>{formErrors.artist}</span>)}
-        </div>
+      <div className="page-wrapper">
+				<form onSubmit={this.handleSubmit}>
+					<div className="artistContainer">
+						<label htmlFor="artist">Artist</label>
+						<input 
+							placeholder="Artist" 
+							type="artist" 
+							name="artist" 
+							onChange={this.handleChange}
+						/>
+						{formErrors.artist.length > 0 ? (<span>{formErrors.artist}</span>) : (<span></span>)}
+					</div>
 
-        <div className="date">
-          
-        </div>
-        
-        <div className="Search">
-          <button type="submit">Search</button>
-        </div>
+					<div className="search-btn">
+						<button type="submit">Search</button>
+					</div>
 
-      </form>
+					<div className="songsContainer">
+						<ul>
+							{songs.map((song, i) =>
+								<li key={i}> 
+									<a href={song.trackViewUrl}>{song.trackCensoredName}</a>
+								</li>
+							)}
+						</ul>
+					</div>
+				</form>
+      </div>
     );
   }
 }
@@ -112,11 +110,11 @@ class Search extends React.Component {
 const artistRegex = RegExp("^[a-zA-Z0-9 ]*$");
 
 // Function to validate form errors being empty.
-const formValid = ({ formErrors }) => {
+const formValid = (formErrors) => {
   let valid = true;
 
   Object.values(formErrors).forEach(error => {
-    valid = valid && error.length > 0;
+    error.length > 0 && (valid = false);
   });
 
   return valid;

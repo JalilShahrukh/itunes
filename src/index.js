@@ -1,18 +1,15 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import SearchForm from './components/SearchFrom';
+import Search from './components/Search';
 
 class App extends React.Component { 
   render() { 
     return (
       <div>
-        <Header />
-        <SearchForm />
+        <Search />
       </div>
     );
   }
 }
-
-const Header = () => {return (<h1>Which songs are you looking for?</h1>);}
 
 ReactDOM.render(<App />, document.getElementById('root'));

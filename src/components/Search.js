@@ -1,12 +1,16 @@
 import React from 'react';
 import axios from 'axios';
+import moment from 'moment';
 import jsonpAdapter from 'axios-jsonp';
 
 // API URL.
 const API = "https://itunes.apple.com/search?term=";
 
 // Regex to match alpha numeric characters and spaces. 
-const artistRegex = RegExp("^[a-zA-Z0-9 ]*$");
+const artistRegex = /^[a-zA-Z0-9 ]*$/;
+
+// Regex to verify DD-MM-YYYY format.
+const dateRegex = /^\s*(3[01]|[12][0-9]|0?[1-9])\-(1[012]|0?[1-9])\-((?:19|20)\d{2})\s*$/;
 
 // Function to validate form errors being empty.
 const formValid = (formErrors) => {
@@ -27,15 +31,19 @@ class Search extends React.Component {
       songs: [],
       formErrors: {
         artist: '',
-        songs: ''
+				songs: '',
+				startDate: '',
+				endDate: ''
       },
       isLoading: false,
-      error: ''
+			error: '',
+			startDate: '',
+			endDate: ''
     };
 
     this.handleSearch = this.handleSearch.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
-    this.handleChange = this.handleChange.bind(this);
+		this.handleChange = this.handleChange.bind(this);
   }
 
   // Function to request data from API.
@@ -57,13 +65,14 @@ class Search extends React.Component {
 
   // Function to handle user submit.
   handleSubmit(e) {
+	  console.log(this.state);
 		e.preventDefault();
 		const { formErrors, artist } = this.state;
 
     if (formValid(formErrors)) {
       this.handleSearch(artist);
     } else {
-      console.error(`Artist name field can only contain alpha numeric characters and spaces, sorry AC/DC fans.`);
+      console.error(`Unable to lookup`);
     }
   };
 
@@ -75,14 +84,18 @@ class Search extends React.Component {
 
     switch (name) {
       case 'artist':
-        formErrors.artist = artistRegex.test(value) ? '' : 'Invalid artist ';
-        break;
+        formErrors.artist = artistRegex.test(value) ? '' : 'Artist name field can only contain alpha numeric characters and spaces, sorry AC/DC fans';
+				break;
+			case 'startDate':
+				formErrors.startDate = dateRegex.test(value) ? ''  : 'Date must be in DD-MM-YYYY format';
+			case 'endDate': 
+				formErrors.endDate = dateRegex.test(value) ? '' : 'Date must be in DD-MM-YYYY format';
       default:
         break;
     }
 
     this.setState({ formErrors, [name]: value }, () => console.log(this.state));
-  };
+	};
 
   render() {
     const { formErrors, songs, isLoading } = this.state;
@@ -90,15 +103,32 @@ class Search extends React.Component {
     return (
 			<div className="page-wrapper">
 				<form onSubmit={this.handleSubmit}>
-						<label>Artist</label>
+					 <label>Artist</label>
+					 <input 
+					  type="text"
+						placeholder="Artist" 
+						name="artist"
+						onChange={this.handleChange}
+					  />
+					 {formErrors.artist.length > 0 ? (<span>{formErrors.artist}</span>) : (<span></span>)}
+					
+					<div className="date-range">
+					  <input 
+						type="text"
+						placeholder="Start Date"  
+						name="startDate"
+						onChange={this.handleChange}
+					  />
+						{formErrors.startDate.length > 0 ? (<span>{formErrors.startDate}</span>) : (<span></span>)}
+						
 						<input 
-						  type="text"
-							placeholder="Artist" 
-							type="artist" 
-							name="artist"
-							onChange={this.handleChange}
-						/>
-						{formErrors.artist.length > 0 ? (<span>{formErrors.artist}</span>) : (<span></span>)}
+						type="text"
+						placeholder="End Date"  
+						name="endDate"
+						onChange={this.handleChange}
+					  />
+						{formErrors.endDate.length > 0 ? (<span>{formErrors.endDate}</span>) : (<span></span>)}
+					</div>
 
 				  <div className="search-btn">
 					  <button type="submit">Search</button>
@@ -110,9 +140,12 @@ class Search extends React.Component {
 				<div className="songsContainer">
 					<ul>
 						{songs.map((song, i) =>
-							<li key={i}> 
-								<a href={song.trackViewUrl}>{song.trackCensoredName}</a>
-							</li>
+							moment(new Date(this.state.endDate)).toISOString() > song.releaseDate && song.releaseDate > moment(new Date(this.state.startDate)).toISOString()
+							? <li key={i}>
+								  <a href={song.trackViewUrl}>{song.trackCensoredName}</a>
+									<img src={song.artworkUrl100} />
+								</li>
+							: ''
 						)}
 					</ul>
 				</div>

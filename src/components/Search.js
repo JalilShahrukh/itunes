@@ -9,8 +9,8 @@ const API = "https://itunes.apple.com/search?term=";
 // Regex to match alpha numeric characters and spaces. 
 const artistRegex = /^[a-zA-Z0-9 ]*$/;
 
-// Regex to verify DD-MM-YYYY format.
-const dateRegex = /^\s*(3[01]|[12][0-9]|0?[1-9])\-(1[012]|0?[1-9])\-((?:19|20)\d{2})\s*$/;
+// Regex to verify MM/DD/YYYY format.
+const dateRegex = /^(0?[1-9]|1[0-2])\/(0?[1-9]|1\d|2\d|3[01])\/(19|20)\d{2}$/;
 
 // Function to validate form errors being empty.
 const formValid = (formErrors) => {
@@ -67,12 +67,16 @@ class Search extends React.Component {
   handleSubmit(e) {
 	  console.log(this.state);
 		e.preventDefault();
-		const { formErrors, artist } = this.state;
+		const { formErrors, artist, startDate, endDate} = this.state;
+
+		formErrors.startDate = dateRegex.test(startDate) ? ''  : 'Start Date must be in MM/DD/YYYY format.';
+		formErrors.endDate = dateRegex.test(endDate) ? '' : 'End Date must be in MM/DD/YYYY format.';
 
     if (formValid(formErrors)) {
-      this.handleSearch(artist);
+			this.setState({error: ''}); 
+			this.handleSearch(artist);
     } else {
-      console.error(`Unable to lookup`);
+      this.setState({error: 'Artist name field can only contain alpha numeric characters and spaces. Date must be in MM/DD/YYYY format. Please try again.'})
     }
   };
 
@@ -80,16 +84,16 @@ class Search extends React.Component {
   handleChange(e) {
     e.preventDefault();
     const { name, value } = e.target;
-    let formErrors = { ...this.state.formErrors };
-
+		let formErrors = { ...this.state.formErrors };
+	
     switch (name) {
       case 'artist':
-        formErrors.artist = artistRegex.test(value) ? '' : 'Artist name field can only contain alpha numeric characters and spaces, sorry AC/DC fans';
+        formErrors.artist = artistRegex.test(value) ? '' : 'Artist name field can only contain alpha numeric characters and spaces, sorry AC/DC fans.';
 				break;
-			case 'startDate':
-				formErrors.startDate = dateRegex.test(value) ? ''  : 'Date must be in DD-MM-YYYY format';
-			case 'endDate': 
-				formErrors.endDate = dateRegex.test(value) ? '' : 'Date must be in DD-MM-YYYY format';
+			// case 'startDate':
+			// 	formErrors.startDate = dateRegex.test(value) ? ''  : 'Date must be in MM/DD/YYYY format';
+			// case 'endDate': 
+			// 	formErrors.endDate = dateRegex.test(value) ? '' : 'Date must be in MM/DD/YYYY format';
       default:
         break;
     }
@@ -98,46 +102,50 @@ class Search extends React.Component {
 	};
 
   render() {
-    const { formErrors, songs, isLoading } = this.state;
+    const { formErrors, songs, isLoading, startDate, endDate, error} = this.state;
 
     return (
 			<div className="page-wrapper">
 				<form onSubmit={this.handleSubmit}>
-					 <label>Artist</label>
-					 <input 
-					  type="text"
-						placeholder="Artist" 
-						name="artist"
-						onChange={this.handleChange}
-					  />
-					 {formErrors.artist.length > 0 ? (<span>{formErrors.artist}</span>) : (<span></span>)}
+				  <input 
+					id="artist"
+					type="text"
+					placeholder="Artist" 
+					name="artist"
+					onChange={this.handleChange}
+					/>
 					
-					<div className="date-range">
-					  <input 
-						type="text"
-						placeholder="Start Date"  
-						name="startDate"
-						onChange={this.handleChange}
-					  />
-						{formErrors.startDate.length > 0 ? (<span>{formErrors.startDate}</span>) : (<span></span>)}
+					<input 
+					id="startDate"
+					type="text"
+					placeholder="Start Date"  
+					name="startDate"
+					onChange={this.handleChange}
+					/>
 						
-						<input 
-						type="text"
-						placeholder="End Date"  
-						name="endDate"
-						onChange={this.handleChange}
-					  />
-						{formErrors.endDate.length > 0 ? (<span>{formErrors.endDate}</span>) : (<span></span>)}
-					</div>
+					<input 
+					id="endDate"
+					type="text"
+					placeholder="End Date"  
+					name="endDate"
+					onChange={this.handleChange}
+					/>
 
-				  <div className="search-btn">
-					  <button type="submit">Search</button>
-				  </div>
+					<button type="submit">Search</button>
+
+					<div className="error-alert">
+						{formErrors.artist.length > 0 ? (<p className="error-message">{formErrors.artist}</p>) : (<span></span>)}
+						{/* {formErrors.startDate.length > 0 ? (<p className="error-message">{formErrors.startDate}</p>) : (<span></span>)} */}
+						{/* {formErrors.endDate.length > 0 ? (<p className="error-message">{formErrors.endDate}</p>) : (<span></span>)} */}
+						{error !== '' ? <p className="error-message">{error}</p> : <span></span>}
+					</div>
 				</form>
 
 		    {isLoading ? (<span>Loading...</span>) : <span></span>}
 
 				<div className="songsContainer">
+					{startDate !== '' && endDate !== '' 
+					?
 					<ul>
 						{songs.map((song, i) =>
 							moment(new Date(this.state.endDate)).toISOString() > song.releaseDate && song.releaseDate > moment(new Date(this.state.startDate)).toISOString()
@@ -148,6 +156,17 @@ class Search extends React.Component {
 							: ''
 						)}
 					</ul>
+					: 
+					<ul>
+					{songs.map((song, i) =>
+						<li key={i}>
+								<a href={song.trackViewUrl}>{song.trackCensoredName}</a>
+								<img src={song.artworkUrl100} />
+							</li>
+					
+					  )}
+					 </ul>
+					}
 				</div>
 			</div>
     );

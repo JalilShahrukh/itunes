@@ -65,18 +65,22 @@ class Search extends React.Component {
 
   // Function to handle user submit.
   handleSubmit(e) {
-	  console.log(this.state);
 		e.preventDefault();
-		const { formErrors, artist, startDate, endDate} = this.state;
-
-		formErrors.startDate = dateRegex.test(startDate) ? ''  : 'Start Date must be in MM/DD/YYYY format.';
-		formErrors.endDate = dateRegex.test(endDate) ? '' : 'End Date must be in MM/DD/YYYY format.';
+		const { formErrors, artist } = this.state;
 
     if (formValid(formErrors)) {
-			this.setState({error: ''}); 
+			this.setState({
+				error: '',
+				startDate: '',
+				endDate: ''
+			});
 			this.handleSearch(artist);
     } else {
-      this.setState({error: 'Artist name field can only contain alpha numeric characters and spaces. Date must be in MM/DD/YYYY format. Please try again.'})
+      this.setState({
+				error: 'Artist name field can only contain alpha numeric characters and spaces. Date must be in MM/DD/YYYY format. Please try again.',
+			  startDate: '',
+				endDate: ''
+			});
     }
   };
 
@@ -90,19 +94,20 @@ class Search extends React.Component {
       case 'artist':
         formErrors.artist = artistRegex.test(value) ? '' : 'Artist name field can only contain alpha numeric characters and spaces, sorry AC/DC fans.';
 				break;
-			// case 'startDate':
-			// 	formErrors.startDate = dateRegex.test(value) ? ''  : 'Date must be in MM/DD/YYYY format';
-			// case 'endDate': 
-			// 	formErrors.endDate = dateRegex.test(value) ? '' : 'Date must be in MM/DD/YYYY format';
+			case 'startDate':
+				formErrors.startDate = dateRegex.test(value) ? ''  : 'Date must be in MM/DD/YYYY format';
+			case 'endDate': 
+				formErrors.endDate = dateRegex.test(value) ? '' : 'Date must be in MM/DD/YYYY format';
       default:
         break;
     }
 
+		// This
     this.setState({ formErrors, [name]: value }, () => console.log(this.state));
 	};
 
   render() {
-    const { formErrors, songs, isLoading, startDate, endDate, error} = this.state;
+    const { formErrors, songs, isLoading, startDate, endDate, error } = this.state;
 
     return (
 			<div className="page-wrapper">

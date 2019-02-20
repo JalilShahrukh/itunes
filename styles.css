@@ -2,3 +2,19 @@
   color: red;
   margin: 0;
 }
+
+.songsContainer { 
+  width: 100%;
+}
+
+.songsContainer ul { 
+  list-style: none;
+  text-align: center;
+}
+
+.songsContainer ul li {
+  border: 3px solid black;
+  margin: 20px;
+  display: inline-block;
+  text-align: center; 
+}

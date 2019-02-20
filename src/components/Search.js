@@ -37,6 +37,7 @@ class Search extends React.Component {
       },
       isLoading: false,
 			error: '',
+			loadError: '',
 			startDate: '',
 			endDate: ''
     };
@@ -55,7 +56,8 @@ class Search extends React.Component {
     axios.get(API + query.split(' ').join('+'), { adapter: jsonpAdapter })
 			.then(res => 
         this.setState({
-         songs: res.data.results,
+				 songs: res.data.results,
+				 loadError: res.data.results.length,
 				 isLoading: false,
 				 error: ''
 				})
@@ -63,14 +65,20 @@ class Search extends React.Component {
       .catch(error => this.setState({
         error,
         isLoading: false
-      }))
+			}))
   }
 
   // Function to handle user submit.
   handleSubmit(e) {
 		e.preventDefault();
-		const { startDate, endDate } = e.target;
-		const { formErrors, artist } = this.state;
+		const { artist, startDate, endDate } = e.target;
+		const { formErrors } = this.state;
+
+		if (artist.value.length === 0) { 
+			formErrors.artist = 'Arist name field is required.';
+		} else { 
+			formErrors.artist = artistRegex.test(artist.value) ? '' : 'Artist name field can only contain alpha numeric characters and spaces, sorry AC/DC fans.';
+		}
 
 		if (startDate.value.length > 0) {
 			formErrors.startDate = dateRegex.test(startDate.value) ? ''  : 'Date must be in MM/DD/YYYY format';
@@ -80,8 +88,9 @@ class Search extends React.Component {
 			formErrors.endDate = dateRegex.test(endDate.value) ? ''  : 'Date must be in MM/DD/YYYY format';
 		}
 
-		this.setState({ 
+		this.setState({
 			formErrors: { 
+				artist: formErrors.artist,
 				startDate: formErrors.startDate,
 				endDate: formErrors.endDate
 			}
@@ -89,9 +98,11 @@ class Search extends React.Component {
 
     if (formValid(formErrors)) {
 			this.setState({ 
+				startDate: startDate.value,
+				endDate: endDate.value,
 				error: ''
 			})
-			this.handleSearch(artist);
+			this.handleSearch(this.state.artist);
     } else {
       this.setState({
 				error: 'Artist name field is required and can only contain alpha numeric characters and spaces. Date must be in MM/DD/YYYY format. Please try again.',
@@ -112,7 +123,7 @@ class Search extends React.Component {
 		let formErrors = { ...this.state.formErrors };
 	
     switch (name) {
-      case 'artist':
+			case 'artist':
 				formErrors.artist = artistRegex.test(value) ? '' : 'Artist name field can only contain alpha numeric characters and spaces, sorry AC/DC fans.';
 				break;
       default:
@@ -123,7 +134,7 @@ class Search extends React.Component {
 	};
 
   render() {
-    const { songs, isLoading, startDate, endDate, error } = this.state;
+    const { songs, isLoading, startDate, endDate, error, loadError } = this.state;
 
     return (
 			<div className="page-wrapper">
@@ -158,10 +169,11 @@ class Search extends React.Component {
 					</div>
 				</form>
 
-		    {isLoading ? (<span>Loading...</span>) : <span></span>}
+				{isLoading ? (<span>Loading...</span>) : <span></span>}
+				{loadError === 0 ? <p className="error-message">{`We didn't find anything :/`}</p> : <span></span>}
 
 				<div className="songsContainer">
-					{startDate !== '' && endDate !== '' 
+					{ (startDate !== '' && endDate !== '') 
 					?
 					<ul>
 						{songs.map((song, i) =>

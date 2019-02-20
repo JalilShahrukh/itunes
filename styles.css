@@ -1,6 +1,22 @@
-.error-message { 
+form { 
+  width: 100%;
+  text-align: center;
+}
+
+input { 
+  margin: 10px;
+}
+
+.error-alert { 
+  width: 100%;
+}
+
+.error-message {
+  margin-top: 0;
+  margin-left: auto;
+  margin-right: auto;
+  width: 500px;  
   color: red;
-  margin: 0;
 }
 
 .songsContainer { 
@@ -13,6 +29,8 @@
 }
 
 .songsContainer ul li {
+  height: 300px;
+  width: 300px;
   border: 3px solid black;
   margin: 20px;
   display: inline-block;

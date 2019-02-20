@@ -48,14 +48,17 @@ class Search extends React.Component {
 
   // Function to request data from API.
   handleSearch(query) { 
-    this.setState({isLoading: true}); 
+		this.setState({isLoading: true}); 
+		
+		console.log(API + query.split(' ').join('+'));
 
     axios.get(API + query.split(' ').join('+'), { adapter: jsonpAdapter })
-      .then(res => 
+			.then(res => 
         this.setState({
          songs: res.data.results,
-         isLoading: false
-        })
+				 isLoading: false,
+				 error: ''
+				})
       )
       .catch(error => this.setState({
         error,
@@ -66,35 +69,23 @@ class Search extends React.Component {
   // Function to handle user submit.
   handleSubmit(e) {
 		e.preventDefault();
-		const { artistName, startDate, endDate } = e.target;
+		const { startDate, endDate } = e.target;
 		const { formErrors, artist } = this.state;
-
-		if (artistName.value.length > 0) {
-			formErrors.artist = artistRegex.test(artistName.value) ? '' : 'Artist name field can only contain alpha numeric characters and spaces, sorry AC/DC fans.';
-			this.setState({
-				formErrors: { 
-					artist: formErrors.artist
-			  }
-		  });
-		}
 
 		if (startDate.value.length > 0) {
 			formErrors.startDate = dateRegex.test(startDate.value) ? ''  : 'Date must be in MM/DD/YYYY format';
-			this.setState({
-				formErrors: { 
-					startDate: formErrors.startDate
-			  }
-		  });
-		}
+		} 
 
 		if (endDate.value.length > 0) {
 			formErrors.endDate = dateRegex.test(endDate.value) ? ''  : 'Date must be in MM/DD/YYYY format';
-			this.setState({
-				formErrors: { 
-					endDate: formErrors.endDate
-			  }
-		  });
 		}
+
+		this.setState({ 
+			formErrors: { 
+				startDate: formErrors.startDate,
+				endDate: formErrors.endDate
+			}
+		})
 
     if (formValid(formErrors)) {
 			this.setState({ 
@@ -124,10 +115,6 @@ class Search extends React.Component {
       case 'artist':
 				formErrors.artist = artistRegex.test(value) ? '' : 'Artist name field can only contain alpha numeric characters and spaces, sorry AC/DC fans.';
 				break;
-			// case 'startDate':
-			// 	formErrors.startDate = dateRegex.test(value) ? ''  : 'Date must be in MM/DD/YYYY format';
-			// case 'endDate': 
-			// 	formErrors.endDate = dateRegex.test(value) ? '' : 'Date must be in MM/DD/YYYY format';
       default:
         break;
 		}
@@ -136,16 +123,17 @@ class Search extends React.Component {
 	};
 
   render() {
-    const { formErrors, songs, isLoading, startDate, endDate, error } = this.state;
+    const { songs, isLoading, startDate, endDate, error } = this.state;
 
     return (
 			<div className="page-wrapper">
 				<form onSubmit={this.handleSubmit}>
+          <p>Enter your favorite artist!</p>
 				  <input 
 					id="artist"
 					type="text"
 					placeholder="Artist" 
-					name="artistName"
+					name="artist"
 					onChange={this.handleChange}
 					/>
 					
@@ -154,7 +142,6 @@ class Search extends React.Component {
 					type="text"
 					placeholder="Start Date"  
 					name="startDate"
-					// onChange={this.handleChange}
 					/>
 						
 					<input 
@@ -162,16 +149,12 @@ class Search extends React.Component {
 					type="text"
 					placeholder="End Date"  
 					name="endDate"
-					// onChange={this.handleChange}
 					/>
 
 					<button type="submit">Search</button>
 
 					<div className="error-alert">
-						{/* {formErrors.artist.length > 0 ? (<p className="error-message">{formErrors.artist}</p>) : (<span></span>)} */}
-						{/* {formErrors.startDate.length > 0 ? (<p className="error-message">{formErrors.startDate}</p>) : (<span></span>)} */}
-						{/* {formErrors.endDate.length > 0 ? (<p className="error-message">{formErrors.endDate}</p>) : (<span></span>)} */}
-						{error !== '' ? <p className="error-message">{error}</p> : <span></span>}
+					  {error !== '' ? <p className="error-message">{error}</p> : <span></span>}
 					</div>
 				</form>
 
@@ -191,12 +174,12 @@ class Search extends React.Component {
 							: ''
 						)}
 					</ul>
-					: 
+					:
 					<ul>
 					{songs.map((song, i) =>
 						<li key={i}>
 							<img src={song.artworkUrl100} />
-							<a href={song.trackViewUrl}><p>{song.trackCensoredName}</p></a>
+							<a href={song.trackViewUrl}><p className="trackCensoredName">{song.trackCensoredName}</p></a>
 							<p>{moment(song.releaseDate).format('MM/DD/YYYY')}</p>
 						</li>
 					  )}

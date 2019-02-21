@@ -1,0 +1,38 @@
+form { 
+  width: 100%;
+  text-align: center;
+}
+
+input { 
+  margin: 10px;
+}
+
+.error-alert { 
+  width: 100%;
+}
+
+.error-message {
+  margin-top: 0;
+  margin-left: auto;
+  margin-right: auto;
+  width: 500px;  
+  color: red;
+}
+
+.songsContainer { 
+  width: 100%;
+}
+
+.songsContainer ul { 
+  list-style: none;
+  text-align: center;
+}
+
+.songsContainer ul li {
+  height: 300px;
+  width: 300px;
+  border: 3px solid black;
+  margin: 20px;
+  display: inline-block;
+  text-align: center; 
+}

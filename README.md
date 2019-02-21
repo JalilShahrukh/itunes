@@ -1,1 +1,1 @@
-# itunes
+# To get application running in fork and clone the repository. Run npm install and npm install --dev to get dependencies. The npm run dev script will bundle the project and can be accessed on localhost:8080.
